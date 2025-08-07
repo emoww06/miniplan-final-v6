@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tüm Icon'ları Oluştur</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        canvas {
+            border: 2px solid #ddd;
+            margin: 5px;
+            display: block;
+        }
+        .download-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 2px;
+            font-size: 12px;
+        }
+        .download-btn:hover {
+            background: #1976D2;
+        }
+        .download-all-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .download-all-btn:hover {
+            background: #45a049;
+        }
+        .icon-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .icon-item {
+            text-align: center;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .status {
+            background: #4caf50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .size-info {
+            font-size: 11px;
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Tüm PWA Icon'larını Oluştur</h1>
+        
+        <div class="instructions">
+            <h3>📋 Talimatlar:</h3>
+            <ol>
+                <li>Aşağıdaki "Tüm Icon'ları Oluştur" butonuna tıklayın</li>
+                <li>Icon'lar oluşturulduktan sonra "Tümünü İndir" butonuna tıklayın</li>
+                <li>İndirilen ZIP dosyasını açın</li>
+                <li>Tüm dosyaları <code>miniplan_new/icons/</code> klasörüne kopyalayın</li>
+            </ol>
+        </div>
+
+        <button class="download-all-btn" onclick="createAllIcons()">🎨 Tüm Icon'ları Oluştur</button>
+        <button class="download-all-btn" onclick="downloadAllIcons()" id="downloadAllBtn" style="display:none;">📦 Tümünü İndir (ZIP)</button>
+        
+        <div class="icon-preview" id="iconPreview">
+            <!-- Icon'lar burada görünecek -->
+        </div>
+    </div>
+
+    <script>
+        const iconSizes = [
+            { size: 72, name: '72x72' },
+            { size: 96, name: '96x96' },
+            { size: 128, name: '128x128' },
+            { size: 144, name: '144x144' },
+            { size: 152, name: '152x152' },
+            { size: 192, name: '192x192' },
+            { size: 384, name: '384x384' },
+            { size: 512, name: '512x512' }
+        ];
+
+        let allCanvases = [];
+
+        function createAllIcons() {
+            const preview = document.getElementById('iconPreview');
+            preview.innerHTML = '';
+            allCanvases = [];
+            
+            iconSizes.forEach(iconSize => {
+                // Normal icon
+                createIcon(iconSize.size, iconSize.size, false, `icon-${iconSize.name}.png`);
+                // Maskable icon
+                createIcon(iconSize.size, iconSize.size, true, `icon-${iconSize.name}-maskable.png`);
+            });
+            
+            document.getElementById('downloadAllBtn').style.display = 'inline-block';
+        }
+        
+        function createIcon(width, height, isMaskable, filename) {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#2196F3');
+            gradient.addColorStop(1, '#1976D2');
+            
+            // Background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            if (isMaskable) {
+                // Maskable icon için safe area (9/10 of the canvas)
+                const safeArea = width * 0.9;
+                const offset = (width - safeArea) / 2;
+                
+                // Safe area background
+                ctx.fillStyle = '#1565C0';
+                ctx.fillRect(offset, offset, safeArea, safeArea);
+            }
+            
+            // Ana icon tasarımı
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const iconSize = isMaskable ? width * 0.6 : width * 0.7;
+            
+            // Checkmark icon
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = Math.max(2, iconSize * 0.08);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Checkmark çizimi
+            const startX = centerX - iconSize * 0.3;
+            const startY = centerY;
+            const midX = centerX - iconSize * 0.1;
+            const midY = centerY + iconSize * 0.2;
+            const endX = centerX + iconSize * 0.3;
+            const endY = centerY - iconSize * 0.2;
+            
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(midX, midY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            
+            // Circle outline
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = Math.max(1, iconSize * 0.05);
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, iconSize * 0.4, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Icon container
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'icon-item';
+            
+            const title = document.createElement('h4');
+            title.textContent = filename;
+            title.style.margin = '5px 0';
+            title.style.fontSize = '14px';
+            
+            const sizeInfo = document.createElement('div');
+            sizeInfo.className = 'size-info';
+            sizeInfo.textContent = `${width}x${height} - ${isMaskable ? 'Maskable' : 'Normal'}`;
+            
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-btn';
+            downloadBtn.textContent = `📥 İndir`;
+            downloadBtn.onclick = () => downloadCanvas(canvas, filename);
+            
+            iconDiv.appendChild(title);
+            iconDiv.appendChild(sizeInfo);
+            iconDiv.appendChild(canvas);
+            iconDiv.appendChild(downloadBtn);
+            
+            document.getElementById('iconPreview').appendChild(iconDiv);
+            
+            // Canvas'ı listeye ekle
+            allCanvases.push({ canvas, filename });
+        }
+        
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            // Başarı mesajı
+            const status = document.createElement('div');
+            status.className = 'status';
+            status.textContent = `✅ ${filename} indirildi!`;
+            document.body.appendChild(status);
+            
+            setTimeout(() => {
+                status.remove();
+            }, 2000);
+        }
+        
+        function downloadAllIcons() {
+            // JSZip kütüphanesini dinamik olarak yükle
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+            script.onload = () => {
+                createZipFile();
+            };
+            document.head.appendChild(script);
+        }
+        
+        function createZipFile() {
+            const zip = new JSZip();
+            
+            allCanvases.forEach(({ canvas, filename }) => {
+                canvas.toBlob((blob) => {
+                    zip.file(filename, blob);
+                }, 'image/png');
+            });
+            
+            zip.generateAsync({ type: 'blob' }).then((content) => {
+                const link = document.createElement('a');
+                link.download = 'miniplan-icons.zip';
+                link.href = URL.createObjectURL(content);
+                link.click();
+                
+                // Başarı mesajı
+                const status = document.createElement('div');
+                status.className = 'status';
+                status.textContent = `✅ Tüm icon'lar ZIP olarak indirildi!`;
+                document.body.appendChild(status);
+                
+                setTimeout(() => {
+                    status.remove();
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html> 

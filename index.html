@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MiniPlan - Günlük Plan + AI Motive Geri Bildirim</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Günlük hedeflerinizi planlayın, takip edin ve AI destekli motivasyon alın">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MiniPlan">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192x192.png">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Kullanıcı Kurulum Modal -->
+    <div id="userSetupModal" class="auth-modal">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="logo">🎯</div>
+                <h1>MiniPlan Premium</h1>
+                <p>Hedeflerinizi takip edin, başarıya ulaşın!</p>
+            </div>
+            
+            <div class="auth-form">
+                <h2>Hoş Geldiniz!</h2>
+                <p style="margin-bottom: 20px; color: #666;">Kullanmaya başlamak için kullanıcı adınızı belirleyin:</p>
+                <input type="text" id="userNameInput" class="auth-input" placeholder="Kullanıcı Adınız" required>
+                <button onclick="createUser()" class="auth-btn">Başla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Arkadaş Modal -->
+    <div id="friendsModal" class="auth-modal" style="display: none;">
+        <div class="auth-container" style="max-width: 600px;">
+            <div class="auth-header">
+                <div class="logo">👥</div>
+                <h1>Arkadaşlarım</h1>
+                <p>Arkadaşlarınızla hedeflerinizi paylaşın ve motivasyonunuzu artırın!</p>
+            </div>
+            
+            <div class="auth-form">
+                <h2>Arkadaş Ekle</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="friendNameInput" class="auth-input" placeholder="Arkadaş Adı" style="flex: 1;">
+                    <input type="text" id="friendCodeInput" class="auth-input" placeholder="Arkadaş Kodu" style="flex: 1;">
+                    <button onclick="addFriend()" class="auth-btn" style="width: auto;">Ekle</button>
+                </div>
+                
+                <h3>Arkadaş Listesi</h3>
+                <div id="friendsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                    <!-- Arkadaşlar buraya gelecek -->
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4>📋 Sizin Kodunuz</h4>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="text" id="myCode" class="auth-input" readonly style="background: #e9ecef;">
+                        <button onclick="copyMyCode()" class="auth-btn" style="width: auto;">Kopyala</button>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        Bu kodu arkadaşlarınızla paylaşın ki sizi ekleyebilsinler!
+                    </p>
+                </div>
+                
+                <button onclick="closeFriendsModal()" class="auth-btn" style="background: #6c757d;">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Plan Modal -->
+    <div id="premiumModal" class="premium-modal" style="display: none;">
+        <div class="premium-container">
+            <div class="premium-header">
+                <div class="premium-logo">💎</div>
+                <h1>MiniPlan Premium</h1>
+                <p>Hedeflerinizi bir üst seviyeye taşıyın!</p>
+            </div>
+            
+            <div class="premium-plans">
+                <div class="plan-card free-plan">
+                    <div class="plan-header">
+                        <h3>🆓 Ücretsiz</h3>
+                        <div class="plan-price">$0</div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>✅ Günlük 5 hedef</li>
+                        <li>✅ Temel takvim</li>
+                        <li>✅ Basit istatistikler</li>
+                        <li>✅ Günlük notlar</li>
+                        <li>✅ Ruh hali takibi</li>
+                        <li>✅ Temel bildirimler</li>
+                    </ul>
+                    <button class="plan-btn free-btn" onclick="selectFreePlan()">Mevcut Plan</button>
+                </div>
+                
+                <div class="plan-card premium-plan">
+                    <div class="plan-badge">POPÜLER</div>
+                    <div class="plan-header">
+                        <h3>💎 Premium</h3>
+                        <div class="plan-price">$4.99<span>/ay</span></div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>✅ Sınırsız hedef</li>
+                        <li>✅ Gelişmiş analitik</li>
+                        <li>✅ AI destekli öneriler</li>
+                        <li>✅ Sosyal özellikler</li>
+                        <li>✅ Özel temalar</li>
+                        <li>✅ Bulut senkronizasyonu</li>
+                        <li>✅ PDF rapor export</li>
+                        <li>✅ Özel rozetler</li>
+                        <li>✅ Akıllı bildirimler</li>
+                    </ul>
+                    <button class="plan-btn premium-btn" onclick="selectPremiumPlan()">Premium'a Geç</button>
+                </div>
+            </div>
+            
+            <div class="premium-footer">
+                <p>7 gün ücretsiz deneme • İstediğiniz zaman iptal edin</p>
+                <button class="close-premium" onclick="closePremiumModal()">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ana Uygulama -->
+    <div id="mainApp" class="container" style="display: none;">
+        <div class="header">
+            <div class="header-controls">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Tema Değiştir">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <select class="color-picker" onchange="changeColor(this.value)" title="Renk Teması">
+                    <option value="blue">🔵 Mavi</option>
+                    <option value="green">🟢 Yeşil</option>
+                    <option value="purple">🟣 Mor</option>
+                    <option value="orange">🟠 Turuncu</option>
+                </select>
+                <button id="premiumBtn" class="premium-btn-header" onclick="showPremiumModal()" title="Premium Plan">
+                    <span id="premiumStatus">🆓</span>
+                </button>
+                <button class="logout-btn" onclick="logout()" title="Çıkış Yap">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+            <div class="user-info">
+                <span id="userName">Kullanıcı</span>
+                <button onclick="showFriendsModal()" class="btn" style="margin-left: 10px; padding: 12px 20px; font-size: 16px; background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.5); font-weight: bold; min-height: 50px; min-width: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.5)'" onmouseout="this.style.background='rgba(255,255,255,0.3)'">
+                    👥 Arkadaşlar
+                </button>
+            </div>
+            <div class="logo">🎯</div>
+            <h1 class="title">MiniPlan Premium</h1>
+            <p class="subtitle">Günlük Plan + AI Motive Geri Bildirim</p>
+            <div class="ai-motivation" id="aiMotivation">
+                "Bugün harika bir gün olacak! Her adımınız başarıya götürüyor. 🌟"
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">📅</span>
+                    Takvim
+                </h2>
+                <div class="calendar">
+                    <!-- AI Goal Suggestions -->
+                    <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 10px;">
+                        <h4 style="margin-bottom: 10px;">🤖 AI Hedef Önerileri</h4>
+                        <div id="aiSuggestions" style="font-size: 14px; line-height: 1.5;">
+                            <!-- AI suggestions will appear here -->
+                        </div>
+                        <button class="btn" style="margin-top: 10px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);" onclick="generateAISuggestions()">
+                            Yeni Öneriler Al
+                        </button>
+                    </div>
+                    
+                    <div class="calendar-header">
+                        <button class="calendar-nav" onclick="previousMonth()">‹</button>
+                        <div class="calendar-title" id="calendarTitle">Ocak 2025</div>
+                        <button class="calendar-nav" onclick="nextMonth()">›</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Takvim günleri buraya gelecek -->
+                    </div>
+                </div>
+
+                <!-- Kişisel Bölümler -->
+                <div style="margin-top: 20px;">
+                    
+                    <!-- Günlük Notlar -->
+                    <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                        <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                            <span style="margin-right: 8px;">📝</span>
+                            Günlük Notlar
+                        </h4>
+                        <textarea id="dailyNotes" placeholder="Bugün için notlarınızı yazın..." style="width: 100%; min-height: 80px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: inherit; resize: vertical;" onchange="saveNotes()"></textarea>
+                        <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #666;">Notlarınız otomatik kaydedilir</span>
+                            <button onclick="clearNotes()" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Temizle</button>
+                        </div>
+                    </div>
+
+                    <!-- Ruh Hali Takibi -->
+                    <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                        <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                            <span style="margin-right: 8px;">😊</span>
+                            Bugün Nasıl Hissediyorsunuz?
+                        </h4>
+                        <div style="display: flex; justify-content: space-around; margin-bottom: 15px;">
+                            <button onclick="setMood('excellent')" class="mood-btn" data-mood="excellent">
+                                <span style="font-size: 24px;">😄</span>
+                                <span style="font-size: 12px;">Mükemmel</span>
+                            </button>
+                            <button onclick="setMood('good')" class="mood-btn" data-mood="good">
+                                <span style="font-size: 24px;">😊</span>
+                                <span style="font-size: 12px;">İyi</span>
+                            </button>
+                            <button onclick="setMood('okay')" class="mood-btn" data-mood="okay">
+                                <span style="font-size: 24px;">😐</span>
+                                <span style="font-size: 12px;">Normal</span>
+                            </button>
+                            <button onclick="setMood('bad')" class="mood-btn" data-mood="bad">
+                                <span style="font-size: 24px;">😔</span>
+                                <span style="font-size: 12px;">Kötü</span>
+                            </button>
+                            <button onclick="setMood('terrible')" class="mood-btn" data-mood="terrible">
+                                <span style="font-size: 24px;">😢</span>
+                                <span style="font-size: 12px;">Çok Kötü</span>
+                            </button>
+                        </div>
+                        <div id="moodStatus" style="text-align: center; font-style: italic; color: #666; font-size: 14px;">
+                            Henüz ruh halinizi belirtmediniz
+                        </div>
+                    </div>
+
+                    <!-- Hava Durumu ve Aktivite -->
+                    <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                        <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                            <span style="margin-right: 8px;">🌤️</span>
+                            Günlük Detaylar
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Hava Durumu</label>
+                                <select id="weather" onchange="saveDailyDetails()" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                                    <option value="">Seçiniz</option>
+                                    <option value="sunny">☀️ Güneşli</option>
+                                    <option value="cloudy">☁️ Bulutlu</option>
+                                    <option value="rainy">🌧️ Yağmurlu</option>
+                                    <option value="snowy">❄️ Karlı</option>
+                                    <option value="stormy">⛈️ Fırtınalı</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Ana Aktivite</label>
+                                <select id="mainActivity" onchange="saveDailyDetails()" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                                    <option value="">Seçiniz</option>
+                                    <option value="work">💼 İş</option>
+                                    <option value="study">📚 Çalışma</option>
+                                    <option value="exercise">🏃‍♂️ Egzersiz</option>
+                                    <option value="social">👥 Sosyal</option>
+                                    <option value="rest">😴 Dinlenme</option>
+                                    <option value="travel">✈️ Seyahat</option>
+                                    <option value="hobby">🎨 Hobi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motivasyon Sözü -->
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <h4 style="margin-bottom: 10px; display: flex; align-items: center;">
+                            <span style="margin-right: 8px;">💪</span>
+                            Bugünün Motivasyon Sözü
+                        </h4>
+                        <div id="dailyQuote" style="font-style: italic; font-size: 16px; line-height: 1.5; margin-bottom: 15px;">
+                            "Başarı yolculuğunuzda her gün yeni bir adım atın."
+                        </div>
+                        <button onclick="newQuote()" class="btn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+                            Yeni Söz Al
+                        </button>
+                    </div>
+
+                    <!-- Premium Özellikler (Premium kullanıcılar için) -->
+                    <div id="premiumFeatures" style="display: none;">
+                        
+                        <!-- Sosyal Özellikler -->
+                        <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                            <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">👥</span>
+                                Sosyal Özellikler
+                            </h4>
+                            <div style="display: grid; gap: 10px;">
+                                <button onclick="showFriendsModal()" class="btn" style="background: #4caf50;">
+                                    <i class="fas fa-users"></i> Arkadaşlarım
+                                </button>
+                                <button onclick="showLeaderboard()" class="btn" style="background: #ff9800;">
+                                    <i class="fas fa-trophy"></i> Liderlik Tablosu
+                                </button>
+                                <button onclick="shareAchievement()" class="btn" style="background: #9c27b0;">
+                                    <i class="fas fa-share"></i> Başarımı Paylaş
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Gelişmiş Analitik -->
+                        <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                            <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">📊</span>
+                                Gelişmiş Analitik
+                            </h4>
+                            <div style="display: grid; gap: 10px;">
+                                <button onclick="exportPDF()" class="btn" style="background: #f44336;">
+                                    <i class="fas fa-file-pdf"></i> PDF Rapor İndir
+                                </button>
+                                <button onclick="showAdvancedAnalytics()" class="btn" style="background: #2196F3;">
+                                    <i class="fas fa-chart-line"></i> Detaylı Analiz
+                                </button>
+                                <button onclick="showTrends()" class="btn" style="background: #00bcd4;">
+                                    <i class="fas fa-trending-up"></i> Trend Analizi
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- AI Özellikleri -->
+                        <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                            <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">🤖</span>
+                                AI Asistan
+                            </h4>
+                            <div style="display: grid; gap: 10px;">
+                                <button onclick="getAIPersonalizedAdvice()" class="btn" style="background: #673ab7;">
+                                    <i class="fas fa-robot"></i> Kişisel AI Önerisi
+                                </button>
+                                <button onclick="optimizeGoals()" class="btn" style="background: #3f51b5;">
+                                    <i class="fas fa-magic"></i> Hedef Optimizasyonu
+                                </button>
+                                <button onclick="predictSuccess()" class="btn" style="background: #009688;">
+                                    <i class="fas fa-crystal-ball"></i> Başarı Tahmini
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="section-icon">🎯</span>
+                    Hedefler & Hatırlatıcılar
+                </h2>
+                
+                <!-- Akıllı Hatırlatıcılar -->
+                <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border-radius: 10px;">
+                    <h4 style="margin-bottom: 10px;">⏰ Akıllı Hatırlatıcılar</h4>
+                    <div style="display: grid; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Günlük Hatırlatıcı</span>
+                            <label class="switch">
+                                <input type="checkbox" id="dailyReminder" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Haftalık Rapor</span>
+                            <label class="switch">
+                                <input type="checkbox" id="weeklyReport" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Motivasyon Mesajları</span>
+                            <label class="switch">
+                                <input type="checkbox" id="motivationMessages" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('today')">Bugün</div>
+                    <div class="tab" onclick="switchTab('selected')">Seçili Gün</div>
+                </div>
+
+                <div class="tab-content active" id="todayTab">
+                    <div class="goals-section">
+                        <div class="selected-date">Bugün: <span id="todayDate"></span></div>
+                        
+                        <!-- Gelişmiş Hedef Ekleme Formu -->
+                        <div style="margin-bottom: 20px; padding: 15px; background: rgba(33, 150, 243, 0.1); border-radius: 10px;">
+                            <h4 style="margin-bottom: 15px; color: #2196F3;">🎯 Yeni Hedef Ekle</h4>
+                            
+                            <!-- Hızlı Şablonlar -->
+                            <div style="margin-bottom: 15px;">
+                                <h5 style="margin-bottom: 10px; color: #666; font-size: 14px;">⚡ Hızlı Şablonlar</h5>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <button onclick="addTemplateGoal('30 dakika egzersiz yap')" class="template-btn">🏃‍♂️ Egzersiz</button>
+                                    <button onclick="addTemplateGoal('Kitap oku')" class="template-btn">📚 Okuma</button>
+                                    <button onclick="addTemplateGoal('Meditasyon yap')" class="template-btn">🧘‍♀️ Meditasyon</button>
+                                    <button onclick="addTemplateGoal('Su iç')" class="template-btn">💧 Su</button>
+                                    <button onclick="addTemplateGoal('Ailemi ara')" class="template-btn">👨‍👩‍👧‍👦 Aile</button>
+                                    <button onclick="addTemplateGoal('Yeni bir şey öğren')" class="template-btn">🎓 Öğrenme</button>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; gap: 10px;">
+                                <input type="text" class="goal-input" placeholder="Hedefinizi yazın..." id="newGoalInput" onkeypress="handleEnterKey(event)">
+                                <select class="goal-input" id="goalCategory" style="background: white;">
+                                    <option value="genel">📋 Genel</option>
+                                    <option value="is">💼 İş</option>
+                                    <option value="saglik">🏃‍♂️ Sağlık</option>
+                                    <option value="egitim">📚 Eğitim</option>
+                                    <option value="sosyal">👥 Sosyal</option>
+                                    <option value="kisisel">🧘‍♀️ Kişisel</option>
+                                    <option value="yaratici">🎨 Yaratıcı</option>
+                                    <option value="finans">💰 Finans</option>
+                                </select>
+                                
+                                <!-- Öncelik Seviyesi -->
+                                <select class="goal-input" id="goalPriority" style="background: white;">
+                                    <option value="normal">⚪ Normal Öncelik</option>
+                                    <option value="high">🔴 Yüksek Öncelik</option>
+                                    <option value="urgent">🚨 Acil</option>
+                                </select>
+                                
+                                <button class="btn" onclick="addNewGoal()" style="width: 100%;">
+                                    <i class="fas fa-plus"></i> Hedef Ekle
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Mevcut Hedefler -->
+                        <div id="todayGoalsList" style="margin-bottom: 20px;">
+                            <!-- Hedefler burada listelenecek -->
+                        </div>
+
+                        <button class="btn btn-secondary" onclick="completeToday()">Günü Tamamla</button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="selectedTab">
+                    <div class="goals-section">
+                        <div class="selected-date">Seçili Gün: <span id="selectedDate"></span></div>
+                        
+                        <!-- Seçili Gün Hedef Ekleme -->
+                        <div style="margin-bottom: 20px; padding: 15px; background: rgba(33, 150, 243, 0.1); border-radius: 10px;">
+                            <h4 style="margin-bottom: 15px; color: #2196F3;">🎯 Seçili Gün Hedefi Ekle</h4>
+                            <div style="display: grid; gap: 10px;">
+                                <input type="text" class="goal-input" placeholder="Hedefinizi yazın..." id="selectedGoalInput" onkeypress="handleSelectedEnterKey(event)">
+                                <select class="goal-input" id="selectedGoalCategory" style="background: white;">
+                                    <option value="genel">📋 Genel</option>
+                                    <option value="is">💼 İş</option>
+                                    <option value="saglik">🏃‍♂️ Sağlık</option>
+                                    <option value="egitim">📚 Eğitim</option>
+                                    <option value="sosyal">👥 Sosyal</option>
+                                    <option value="kisisel">🧘‍♀️ Kişisel</option>
+                                    <option value="yaratici">🎨 Yaratıcı</option>
+                                    <option value="finans">💰 Finans</option>
+                                </select>
+                                <select class="goal-input" id="selectedGoalPriority" style="background: white;">
+                                    <option value="normal">⚪ Normal Öncelik</option>
+                                    <option value="high">🔴 Yüksek Öncelik</option>
+                                    <option value="urgent">🚨 Acil</option>
+                                </select>
+                                <button class="btn" onclick="addSelectedGoal()" style="width: 100%;">
+                                    <i class="fas fa-plus"></i> Hedef Ekle
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Seçili Gün Hedefleri Listesi -->
+                        <div id="selectedGoalsList" style="margin-bottom: 20px;">
+                            <!-- Hedefler burada listelenecek -->
+                        </div>
+
+                        <!-- Seçili Gün Notları -->
+                        <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                            <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                                <span style="margin-right: 8px;">📝</span>
+                                Seçili Gün Notları
+                            </h4>
+                            <textarea id="selectedDayNotes" placeholder="Bu gün için notlarınızı yazın..." style="width: 100%; min-height: 80px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: inherit; resize: vertical;" onchange="saveSelectedNotes()"></textarea>
+                            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 12px; color: #666;">Notlarınız otomatik kaydedilir</span>
+                                <button onclick="clearSelectedNotes()" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Temizle</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <h3>Bugünün İlerlemesi</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressBar"></div>
+                    </div>
+                    <div id="progressText">0/3 hedef tamamlandı</div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalDays">0</div>
+                            <div class="stat-label">Toplam Gün</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="completedGoals">0</div>
+                            <div class="stat-label">Tamamlanan Hedef</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="successRate">0%</div>
+                            <div class="stat-label">Başarı Oranı</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Gamification Stats -->
+                    <div class="stats" style="margin-top: 20px;">
+                        <div class="stat-item">
+                            <div class="stat-number" id="userPoints">0</div>
+                            <div class="stat-label">Toplam Puan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="userLevel">1</div>
+                            <div class="stat-label">Seviye</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="userStreak">0</div>
+                            <div class="stat-label">Günlük Seri</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Badges Section -->
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #2196F3; margin-bottom: 10px;">🏆 Rozetler</h3>
+                        <div id="badgesContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <!-- Badges will be displayed here -->
+                        </div>
+                    </div>
+
+                    <!-- Gelişmiş Analitik -->
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #2196F3; margin-bottom: 10px;">📊 Detaylı Analitik</h3>
+                        
+                        <!-- Haftalık Rapor -->
+                        <div id="weeklyReport" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                            <h4 style="margin-bottom: 10px; color: #333;">📈 Haftalık Performans</h4>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                                <div>
+                                    <div style="font-size: 20px; font-weight: bold; color: #2196F3;" id="weeklyGoals">0</div>
+                                    <div style="font-size: 12px; color: #666;">Hedef</div>
+                </div>
+                                <div>
+                                    <div style="font-size: 20px; font-weight: bold; color: #4caf50;" id="weeklyCompleted">0</div>
+                                    <div style="font-size: 12px; color: #666;">Tamamlanan</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 20px; font-weight: bold; color: #ff9800;" id="weeklyRate">0%</div>
+                                    <div style="font-size: 12px; color: #666;">Başarı Oranı</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kategori Analizi -->
+                        <div id="categoryAnalysis" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                            <h4 style="margin-bottom: 10px; color: #333;">🎯 Kategori Dağılımı</h4>
+                            <div id="categoryChart" style="height: 200px; display: flex; align-items: end; gap: 5px; padding: 10px 0;">
+                                <!-- Kategori grafikleri burada oluşturulacak -->
+                            </div>
+                        </div>
+
+                        <!-- Zaman Analizi -->
+                        <div id="timeAnalysis" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <h4 style="margin-bottom: 10px; color: #333;">⏰ En Verimli Saatler</h4>
+                            <div id="timeChart" style="height: 150px; display: flex; align-items: end; gap: 2px; padding: 10px 0;">
+                                <!-- Zaman grafikleri burada oluşturulacak -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global değişkenler
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let currentUser = null;
+        let userPlan = 'free'; // 'free' veya 'premium'
+        let goals = {};
+        let completedDays = {};
+        let dailyNotes = {};
+        let dailyMoods = {};
+        let dailyDetails = {};
+        let userStats = {
+            points: 0,
+            level: 1,
+            badges: [],
+            streak: 0,
+            premiumFeatures: []
+        };
+        let friends = [];
+        let socialActivities = [];
+        let premiumExpiry = null;
+
+        // Motivasyon sözleri
+        const motivationalQuotes = [
+            "Başarı yolculuğunuzda her gün yeni bir adım atın.",
+            "Küçük hedefler büyük başarıların temelidir.",
+            "Bugün yapabileceğinizi yarına bırakmayın.",
+            "Her gün yeni bir başlangıçtır.",
+            "Motivasyonunuz yüksek, hedefleriniz net.",
+            "Başarı için gerekli olan tek şey bugün başlamak.",
+            "Hedeflerinize ulaşmak için mükemmel bir gün.",
+            "Her gün bir fırsat, bugün sizin fırsatınız.",
+            "Başarı yolculuğunuzda bugün önemli bir adım.",
+            "Küçük ilerlemeler büyük değişimler yaratır."
+        ];
+
+        // Kullanıcı yönetimi
+        function checkAuth() {
+            // Eski kullanıcı verilerini temizle (yeni sistem için)
+            localStorage.removeItem('miniplan_user');
+            localStorage.removeItem('miniplan_users');
+            
+            // Her zaman kullanıcı kurulum modalını göster
+            showUserSetupModal();
+        }
+
+        function loadUserData() {
+            // Tüm değişkenleri güvenli şekilde başlat
+            goals = goals || {};
+            completedDays = completedDays || {};
+            dailyNotes = dailyNotes || {};
+            dailyMoods = dailyMoods || {};
+            dailyDetails = dailyDetails || {};
+            friends = friends || [];
+            userPlan = userPlan || 'free';
+            premiumExpiry = premiumExpiry || null;
+            
+            if (!userStats) {
+                userStats = {
+                    points: 0,
+                    level: 1,
+                    badges: [],
+                    streak: 0,
+                    premiumFeatures: []
+                };
+            }
+            
+            // currentUser kontrolü
+            if (!currentUser) {
+                console.log('currentUser yok, varsayılan değerler yükleniyor');
+                return;
+            }
+            
+            const userGoals = localStorage.getItem(`miniplan_goals_${currentUser.id}`) || '{}';
+            const userCompletedDays = localStorage.getItem(`miniplan_completedDays_${currentUser.id}`) || '{}';
+            const userStatsData = localStorage.getItem(`miniplan_userStats_${currentUser.id}`) || '{}';
+            const userNotes = localStorage.getItem(`miniplan_notes_${currentUser.id}`) || '{}';
+            const userMoods = localStorage.getItem(`miniplan_moods_${currentUser.id}`) || '{}';
+            const userDetails = localStorage.getItem(`miniplan_details_${currentUser.id}`) || '{}';
+            const userPlanData = localStorage.getItem(`miniplan_plan_${currentUser.id}`) || 'free';
+            const userPremiumExpiry = localStorage.getItem(`miniplan_premium_expiry_${currentUser.id}`) || null;
+            const userFriends = localStorage.getItem(`miniplan_friends_${currentUser.id}`) || '[]';
+            
+            goals = JSON.parse(userGoals);
+            completedDays = JSON.parse(userCompletedDays);
+            userStats = JSON.parse(userStatsData);
+            dailyNotes = JSON.parse(userNotes);
+            dailyMoods = JSON.parse(userMoods);
+            dailyDetails = JSON.parse(userDetails);
+            userPlan = userPlanData;
+            premiumExpiry = userPremiumExpiry ? new Date(userPremiumExpiry) : null;
+            friends = JSON.parse(userFriends);
+        }
+
+        function saveUserData() {
+            if (!currentUser) return;
+            
+            localStorage.setItem(`miniplan_goals_${currentUser.id}`, JSON.stringify(goals));
+            localStorage.setItem(`miniplan_completedDays_${currentUser.id}`, JSON.stringify(completedDays));
+            localStorage.setItem(`miniplan_userStats_${currentUser.id}`, JSON.stringify(userStats));
+            localStorage.setItem(`miniplan_notes_${currentUser.id}`, JSON.stringify(dailyNotes));
+            localStorage.setItem(`miniplan_moods_${currentUser.id}`, JSON.stringify(dailyMoods));
+            localStorage.setItem(`miniplan_details_${currentUser.id}`, JSON.stringify(dailyDetails));
+            localStorage.setItem(`miniplan_plan_${currentUser.id}`, userPlan);
+            localStorage.setItem(`miniplan_premium_expiry_${currentUser.id}`, premiumExpiry ? premiumExpiry.toISOString() : null);
+            localStorage.setItem(`miniplan_friends_${currentUser.id}`, JSON.stringify(friends));
+        }
+
+        // AI Motivasyon Cümleleri
+        const motivationMessages = [
+            "Bugün harika bir gün olacak! Her adımınız başarıya götürüyor. 🌟",
+            "Yeni bir gün, yeni fırsatlar! Hedeflerinize odaklanın ve ilerleyin. 💪",
+            "Başarı yolculuğunuzda bugün önemli bir adım atacaksınız. 🚀",
+            "Küçük hedefler büyük başarıların temelidir. Bugün mükemmel! ✨",
+            "Motivasyonunuz yüksek, hedefleriniz net. Bugün sizin gününüz! 🎯",
+            "Her gün yeni bir başlangıç. Bugün fark yaratacaksınız! 🌅",
+            "Hedeflerinize ulaşmak için bugün mükemmel bir gün. Başlayın! 🔥",
+            "Başarı için gerekli olan tek şey bugün başlamak. Hazırsınız! ⭐",
+            "Bugün hedeflerinize bir adım daha yaklaşacaksınız. İnanın! 💎",
+            "Her gün bir fırsat, bugün sizin fırsatınız. Değerlendirin! 🎪"
+        ];
+
+        // Kullanıcı kurulum fonksiyonları
+        function showUserSetupModal() {
+            document.getElementById('userSetupModal').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        function createUser() {
+            const userName = document.getElementById('userNameInput').value.trim();
+            
+            if (!userName) {
+                alert('Lutfen kullanici adinizi girin!');
+                return;
+            }
+            
+            // Kullanıcı adı uzunluğunu kontrol et
+            if (userName.length < 2) {
+                alert('Kullanici adi en az 2 karakter olmalidir!');
+                return;
+            }
+            
+            if (userName.length > 20) {
+                alert('Kullanici adi en fazla 20 karakter olabilir!');
+                return;
+            }
+            
+            // Yeni kullanıcı oluştur
+            currentUser = {
+                id: Date.now(),
+                name: userName,
+                createdAt: new Date()
+            };
+            
+            // Kullanıcıyı kaydet
+            localStorage.setItem('miniplan_user', JSON.stringify(currentUser));
+            
+            // Tüm değişkenleri sıfırla
+            goals = {};
+            completedDays = {};
+            dailyNotes = {};
+            dailyMoods = {};
+            dailyDetails = {};
+            friends = [];
+            userStats = {
+                points: 0,
+                level: 1,
+                badges: [],
+                streak: 0,
+                premiumFeatures: []
+            };
+            userPlan = 'free';
+            premiumExpiry = null;
+            
+            // Kullanıcı verilerini yükle
+            loadUserData();
+            
+            // Ana uygulamayı göster
+            showMainApp();
+            
+            alert('Hos geldiniz, ' + userName + '! 🎉');
+        }
+
+        function showMainApp() {
+            console.log('showMainApp fonksiyonu çalıştı');
+            console.log('currentUser:', currentUser);
+            
+            const userSetupModal = document.getElementById('userSetupModal');
+            const mainApp = document.getElementById('mainApp');
+            const userName = document.getElementById('userName');
+            
+            console.log('userSetupModal:', userSetupModal);
+            console.log('mainApp:', mainApp);
+            console.log('userName:', userName);
+            
+            if (userSetupModal) userSetupModal.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'block';
+            if (userName && currentUser) userName.textContent = currentUser.name;
+            
+            console.log('initializeApp çağrılıyor');
+            initializeApp();
+            console.log('showMainApp tamamlandı');
+        }
+
+
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('miniplan_user');
+            showUserSetupModal();
+            alert('Cikis yapildi');
+        }
+
+        // LocalStorage desteği
+        function saveToLocalStorage() {
+            if (currentUser) {
+                saveUserData();
+            }
+        }
+
+        function loadFromLocalStorage() {
+            if (currentUser) {
+                loadUserData();
+            }
+        }
+
+        // Mobil optimizasyonları
+        function setupMobileOptimizations() {
+            // iOS Safari için viewport düzeltmesi
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                const viewport = document.querySelector('meta[name=viewport]');
+                if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+                }
+            }
+            
+            // Android Chrome için touch optimizasyonu
+            if (/Android/.test(navigator.userAgent)) {
+                document.body.style.touchAction = 'manipulation';
+            }
+            
+            // PWA install prompt
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                showInstallPrompt();
+            });
+        }
+        
+        function showInstallPrompt() {
+            // PWA kurulum önerisi gösterme
+            console.log('PWA kurulum önerisi mevcut');
+        }
+        
+        // Service Worker kaydet
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker başarıyla kaydedildi:', registration.scope);
+                        
+                        // Background sync kaydı
+                        if ('sync' in registration) {
+                            registration.sync.register('background-sync')
+                                .then(() => console.log('Background sync kaydedildi'))
+                                .catch(err => console.log('Background sync hatası:', err));
+                        }
+                        
+                        // Periodic background sync kaydı
+                        if ('periodicSync' in registration) {
+                            registration.periodicSync.register('content-sync', {
+                                minInterval: 24 * 60 * 60 * 1000 // 24 saat
+                            }).then(() => console.log('Periodic sync kaydedildi'))
+                                .catch(err => console.log('Periodic sync hatası:', err));
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker kaydı başarısız:', error);
+                    });
+            });
+        }
+
+        // Sayfa yüklendiğinde auth kontrolü yap
+        window.addEventListener('load', function() {
+            setupMobileOptimizations();
+            checkAuth();
+            loadThemeSettings();
+        });
+
+        // Ana uygulama yüklendiğinde
+        function initializeApp() {
+            console.log('initializeApp başladı');
+            try {
+                // Tüm değişkenleri güvenli şekilde başlat
+                if (!goals) goals = {};
+                if (!completedDays) completedDays = {};
+                if (!dailyNotes) dailyNotes = {};
+                if (!dailyMoods) dailyMoods = {};
+                if (!dailyDetails) dailyDetails = {};
+                if (!friends) friends = [];
+                if (!userStats) {
+                    userStats = {
+                        points: 0,
+                        level: 1,
+                        badges: [],
+                        streak: 0,
+                        premiumFeatures: []
+                    };
+                }
+                if (!userPlan) userPlan = 'free';
+                
+                // Kullanıcı verilerini yükle
+                loadUserData();
+                console.log('loadUserData tamamlandı');
+                
+                loadFromLocalStorage();
+                console.log('loadFromLocalStorage tamamlandı');
+                
+            renderCalendar();
+                console.log('renderCalendar tamamlandı');
+                
+            updateStats();
+                console.log('updateStats tamamlandı');
+                
+                updateAnalytics();
+                console.log('updateAnalytics tamamlandı');
+                
+            displayBadges();
+                console.log('displayBadges tamamlandı');
+                
+            generateAISuggestions();
+                console.log('generateAISuggestions tamamlandı');
+                
+                updateTodayDate();
+                console.log('updateTodayDate tamamlandı');
+                
+                setupNotifications();
+                console.log('setupNotifications tamamlandı');
+                
+                scheduleReminder();
+                console.log('scheduleReminder tamamlandı');
+                
+                loadTodayGoals();
+                console.log('loadTodayGoals tamamlandı');
+                
+                loadNotes();
+                console.log('loadNotes tamamlandı');
+                
+                loadMood();
+                console.log('loadMood tamamlandı');
+                
+                loadDailyDetails();
+                console.log('loadDailyDetails tamamlandı');
+                
+                loadQuote();
+                console.log('loadQuote tamamlandı');
+                
+                updatePremiumStatus();
+                console.log('updatePremiumStatus tamamlandı');
+                
+                loadPremiumFeatures();
+                console.log('loadPremiumFeatures tamamlandı');
+                
+                console.log('initializeApp tamamlandı');
+            } catch (error) {
+                console.error('initializeApp hatası:', error);
+                alert('Uygulama baslatilirken hata olustu: ' + error.message);
+            }
+        }
+
+        // Bildirim sistemi
+        function sendNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: 'favicon.ico',
+                    badge: 'favicon.ico'
+                });
+            }
+        }
+
+        function scheduleReminder() {
+            const now = new Date();
+            const reminderTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0); // Saat 20:00
+            
+            if (now < reminderTime) {
+                const timeUntilReminder = reminderTime.getTime() - now.getTime();
+                setTimeout(() => {
+                    sendNotification('MiniPlan Hatırlatıcı', 'Günlük hedeflerinizi kontrol etmeyi unutmayın! 🎯');
+                }, timeUntilReminder);
+            }
+        }
+
+        // Veri değiştiğinde otomatik kaydet
+        function autoSave() {
+            saveToLocalStorage();
+        }
+
+        // Tema fonksiyonları
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('miniplan_theme', newTheme);
+            
+            const icon = document.querySelector('.theme-toggle i');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            
+            showNotification('Tema değiştirildi!');
+        }
+
+        function changeColor(color) {
+            document.body.setAttribute('data-color', color);
+            localStorage.setItem('miniplan_color', color);
+            showNotification('Renk teması değiştirildi!');
+        }
+
+        function loadThemeSettings() {
+            const savedTheme = localStorage.getItem('miniplan_theme') || 'light';
+            const savedColor = localStorage.getItem('miniplan_color') || 'blue';
+            
+            document.body.setAttribute('data-theme', savedTheme);
+            document.body.setAttribute('data-color', savedColor);
+            
+            const icon = document.querySelector('.theme-toggle i');
+            icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            
+            document.querySelector('.color-picker').value = savedColor;
+        }
+
+        function showNotification(message) {
+            alert(message);
+        }
+
+        function setupNotifications() {
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    console.log('Bildirim izni zaten verilmiş');
+                    setupPushNotifications();
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            console.log('Bildirim izni verildi');
+                            setupPushNotifications();
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Push notifications kurulumu
+        function setupPushNotifications() {
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa1HxJFCwX8j-W9GJ8AvJiePzTshyHvqNG1j2omCyJkTfZwCoQWwvIBFF3Qc')
+                    }).then(subscription => {
+                        console.log('Push subscription:', subscription);
+                        localStorage.setItem('pushSubscription', JSON.stringify(subscription));
+                    }).catch(err => {
+                        console.log('Push subscription hatası:', err);
+                    });
+                });
+            }
+        }
+        
+        // Periodic sync kurulumu
+        function setupPeriodicSync() {
+            if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.periodicSync.register('content-sync', {
+                        minInterval: 24 * 60 * 60 * 1000 // 24 saat
+                    }).then(() => {
+                        console.log('Periodic sync kayıtlı');
+                    }).catch(err => {
+                        console.log('Periodic sync hatası:', err);
+                    });
+                });
+            }
+        }
+        
+        // Background sync kurulumu
+        function setupBackgroundSync() {
+            if ('serviceWorker' in navigator && 'sync' in navigator.serviceWorker) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.sync.register('background-sync').then(() => {
+                        console.log('Background sync kayıtlı');
+                    }).catch(err => {
+                        console.log('Background sync hatası:', err);
+                    });
+                });
+            }
+        }
+        
+        // URL'yi Uint8Array'e çevir
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+            
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        // AI Motivasyon güncelleme
+        function updateAIMotivation() {
+            const today = new Date().toDateString();
+            const dayIndex = new Date().getDate() % motivationMessages.length;
+            const message = motivationMessages[dayIndex];
+            document.getElementById('aiMotivation').textContent = message;
+        }
+
+        // Takvim render
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('calendarTitle').textContent = 
+                new Date(year, month).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            let calendarHTML = '';
+            
+            // Hafta başlıkları
+            const weekdays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+            weekdays.forEach(day => {
+                calendarHTML += `<div class="weekday-header">${day}</div>`;
+            });
+
+            // Takvim günleri
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const isCurrentMonth = date.getMonth() === month;
+                const isToday = date.toDateString() === new Date().toDateString();
+                const hasGoals = goals[date.toDateString()] && goals[date.toDateString()].length > 0;
+                
+                let className = 'calendar-day';
+                if (!isCurrentMonth) className += ' other-month';
+                if (isToday) className += ' today';
+                if (hasGoals) className += ' has-goals';
+                
+                calendarHTML += `
+                    <div class="${className}" onclick="selectDate('${date.toDateString()}')">
+                        ${date.getDate()}
+                    </div>
+                `;
+            }
+
+            document.getElementById('calendarGrid').innerHTML = calendarHTML;
+        }
+
+        // Tarih seçme
+        function selectDate(dateString) {
+            selectedDate = new Date(dateString);
+            document.getElementById('selectedDate').textContent = 
+                selectedDate.toLocaleDateString('tr-TR', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            
+            loadSelectedGoals();
+            loadSelectedNotes();
+            switchTab('selected');
+        }
+
+        // Tab değiştirme
+        function switchTab(tabName) {
+            // Tab butonlarını güncelle
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'today') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('todayTab').classList.add('active');
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('selectedTab').classList.add('active');
+            }
+        }
+
+        // Şablon hedef ekleme
+        function addTemplateGoal(templateText) {
+            document.getElementById('newGoalInput').value = templateText;
+            // Otomatik kategori seçimi
+            if (templateText.includes('egzersiz') || templateText.includes('su')) {
+                document.getElementById('goalCategory').value = 'saglik';
+            } else if (templateText.includes('kitap') || templateText.includes('öğren')) {
+                document.getElementById('goalCategory').value = 'egitim';
+            } else if (templateText.includes('meditasyon')) {
+                document.getElementById('goalCategory').value = 'kisisel';
+            } else if (templateText.includes('aile')) {
+                document.getElementById('goalCategory').value = 'sosyal';
+            }
+        }
+
+        // Yeni hedef ekleme fonksiyonu
+        function addNewGoal() {
+            const goalInput = document.getElementById('newGoalInput');
+            const categorySelect = document.getElementById('goalCategory');
+            const prioritySelect = document.getElementById('goalPriority');
+            const goalText = goalInput.value.trim();
+            const category = categorySelect.value;
+            const priority = prioritySelect.value;
+            
+            if (goalText) {
+                // Premium kontrolü
+                if (!checkGoalLimit()) {
+                    return;
+                }
+                
+                const today = new Date().toDateString();
+                if (!goals[today]) {
+                    goals[today] = [];
+                }
+                
+                const newGoal = {
+                    id: Date.now(),
+                    text: goalText,
+                    category: category,
+                    priority: priority,
+                    completed: false,
+                    createdAt: new Date(),
+                    completedAt: null
+                };
+                
+                goals[today].push(newGoal);
+                goalInput.value = '';
+                
+                displayTodayGoals();
+                updateProgress();
+                updateAnalytics();
+                addPoints(10);
+                autoSave();
+                alert('Hedef eklendi! 🎯');
+            }
+        }
+
+        // Bugünün hedeflerini görüntüle
+        function displayTodayGoals() {
+            const today = new Date().toDateString();
+            const todayGoals = goals[today] || [];
+            const container = document.getElementById('todayGoalsList');
+            
+            if (todayGoals.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Henüz hedef eklenmemiş</p>';
+                return;
+            }
+            
+            // Hedefleri önceliğe göre sırala
+            const sortedGoals = todayGoals.sort((a, b) => {
+                const priorityOrder = { urgent: 3, high: 2, normal: 1 };
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            });
+            
+            container.innerHTML = sortedGoals.map(goal => {
+                const priorityClass = goal.priority === 'high' ? 'priority-high' : 
+                                    goal.priority === 'urgent' ? 'priority-urgent' : '';
+                const priorityIcon = goal.priority === 'high' ? '🔴' : 
+                                   goal.priority === 'urgent' ? '🚨' : '⚪';
+                
+                return `
+                    <div class="${priorityClass}" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: white; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <input type="checkbox" ${goal.completed ? 'checked' : ''} onchange="toggleGoal(${goal.id})" style="transform: scale(1.2);">
+                        <span style="flex: 1; ${goal.completed ? 'text-decoration: line-through; color: #666;' : ''}">${goal.text}</span>
+                        <span style="font-size: 12px; color: #2196F3; background: rgba(33, 150, 243, 0.1); padding: 2px 8px; border-radius: 12px;">${getCategoryIcon(goal.category)}</span>
+                        <span style="font-size: 12px;" title="Öncelik">${priorityIcon}</span>
+                        <button onclick="deleteGoal(${goal.id})" style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Sil</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Kategori ikonları
+        function getCategoryIcon(category) {
+            const icons = {
+                'genel': '📋',
+                'is': '💼',
+                'saglik': '🏃‍♂️',
+                'egitim': '📚',
+                'sosyal': '👥',
+                'kisisel': '🧘‍♀️',
+                'yaratici': '🎨',
+                'finans': '💰'
+            };
+            return icons[category] || '📋';
+        }
+
+        // Hedef durumunu değiştir
+        function toggleGoal(goalId) {
+            const today = new Date().toDateString();
+            const todayGoals = goals[today] || [];
+            const goal = todayGoals.find(g => g.id === goalId);
+            
+            if (goal) {
+                goal.completed = !goal.completed;
+                if (goal.completed) {
+                    goal.completedAt = new Date();
+                    addPoints(5);
+                    showNotification('Hedef tamamlandı! +5 puan 🎉');
+                } else {
+                    goal.completedAt = null;
+                }
+                displayTodayGoals();
+            updateProgress();
+                updateAnalytics();
+                autoSave();
+            }
+        }
+
+        // Hedef sil
+        function deleteGoal(goalId) {
+            const today = new Date().toDateString();
+            goals[today] = goals[today].filter(g => g.id !== goalId);
+            displayTodayGoals();
+            updateProgress();
+            autoSave();
+            showNotification('Hedef silindi');
+        }
+
+        // Enter tuşu ile hedef ekleme
+        function handleEnterKey(event) {
+            if (event.key === 'Enter') {
+                addNewGoal();
+            }
+        }
+
+        // Not yönetimi
+        function saveNotes() {
+            const today = new Date().toDateString();
+            const notes = document.getElementById('dailyNotes').value;
+            dailyNotes[today] = notes;
+            autoSave();
+        }
+
+        function clearNotes() {
+            document.getElementById('dailyNotes').value = '';
+            saveNotes();
+        }
+
+        function loadNotes() {
+            const today = new Date().toDateString();
+            const notes = dailyNotes[today] || '';
+            document.getElementById('dailyNotes').value = notes;
+        }
+
+        // Seçili gün notları
+        function saveSelectedNotes() {
+            const dateString = selectedDate.toDateString();
+            const notes = document.getElementById('selectedDayNotes').value;
+            dailyNotes[dateString] = notes;
+            autoSave();
+        }
+
+        function clearSelectedNotes() {
+            document.getElementById('selectedDayNotes').value = '';
+            saveSelectedNotes();
+        }
+
+        function loadSelectedNotes() {
+            const dateString = selectedDate.toDateString();
+            const notes = dailyNotes[dateString] || '';
+            document.getElementById('selectedDayNotes').value = notes;
+        }
+
+        // Ruh hali yönetimi
+        function setMood(mood) {
+            const today = new Date().toDateString();
+            dailyMoods[today] = mood;
+            
+            // Tüm mood butonlarından selected class'ını kaldır
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Seçilen butona selected class'ını ekle
+            document.querySelector(`[data-mood="${mood}"]`).classList.add('selected');
+            
+            const moodTexts = {
+                'excellent': 'Bugün kendinizi mükemmel hissediyorsunuz! 😄',
+                'good': 'Bugün kendinizi iyi hissediyorsunuz! 😊',
+                'okay': 'Bugün kendinizi normal hissediyorsunuz! 😐',
+                'bad': 'Bugün kendinizi kötü hissediyorsunuz! 😔',
+                'terrible': 'Bugün kendinizi çok kötü hissediyorsunuz! 😢'
+            };
+            
+            document.getElementById('moodStatus').textContent = moodTexts[mood];
+            autoSave();
+        }
+
+        function loadMood() {
+            const today = new Date().toDateString();
+            const mood = dailyMoods[today];
+            
+            if (mood) {
+                setMood(mood);
+            }
+        }
+
+        // Günlük detaylar
+        function saveDailyDetails() {
+            const today = new Date().toDateString();
+            const weather = document.getElementById('weather').value;
+            const activity = document.getElementById('mainActivity').value;
+            
+            dailyDetails[today] = { weather, activity };
+            autoSave();
+        }
+
+        function loadDailyDetails() {
+            const today = new Date().toDateString();
+            const details = dailyDetails[today] || {};
+            
+            document.getElementById('weather').value = details.weather || '';
+            document.getElementById('mainActivity').value = details.activity || '';
+        }
+
+        // Motivasyon sözü
+        function newQuote() {
+            const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+            document.getElementById('dailyQuote').textContent = `"${randomQuote}"`;
+        }
+
+        function loadQuote() {
+            const today = new Date().toDateString();
+            const dayIndex = new Date().getDate() % motivationalQuotes.length;
+            const quote = motivationalQuotes[dayIndex];
+            document.getElementById('dailyQuote').textContent = `"${quote}"`;
+        }
+
+        // Seçili gün hedef yönetimi
+        function addSelectedGoal() {
+            const goalInput = document.getElementById('selectedGoalInput');
+            const categorySelect = document.getElementById('selectedGoalCategory');
+            const prioritySelect = document.getElementById('selectedGoalPriority');
+            const goalText = goalInput.value.trim();
+            const category = categorySelect.value;
+            const priority = prioritySelect.value;
+            
+            if (goalText) {
+                const dateString = selectedDate.toDateString();
+                if (!goals[dateString]) {
+                    goals[dateString] = [];
+                }
+                
+                const newGoal = {
+                    id: Date.now(),
+                    text: goalText,
+                    category: category,
+                    priority: priority,
+                    completed: false,
+                    createdAt: new Date(),
+                    completedAt: null
+                };
+                
+                goals[dateString].push(newGoal);
+                goalInput.value = '';
+                
+                displaySelectedGoals();
+                updateProgress();
+                updateAnalytics();
+                addPoints(10);
+                autoSave();
+                alert('Hedef eklendi! 🎯');
+            }
+        }
+
+        function displaySelectedGoals() {
+            const dateString = selectedDate.toDateString();
+            const selectedGoals = goals[dateString] || [];
+            const container = document.getElementById('selectedGoalsList');
+            
+            if (selectedGoals.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Bu gün için henüz hedef eklenmemiş</p>';
+                return;
+            }
+            
+            // Hedefleri önceliğe göre sırala
+            const sortedGoals = selectedGoals.sort((a, b) => {
+                const priorityOrder = { urgent: 3, high: 2, normal: 1 };
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            });
+            
+            container.innerHTML = sortedGoals.map(goal => {
+                const priorityClass = goal.priority === 'high' ? 'priority-high' : 
+                                    goal.priority === 'urgent' ? 'priority-urgent' : '';
+                const priorityIcon = goal.priority === 'high' ? '🔴' : 
+                                   goal.priority === 'urgent' ? '🚨' : '⚪';
+                
+                return `
+                    <div class="selected-day-goal ${goal.completed ? 'completed' : ''} ${priorityClass}">
+                        <input type="checkbox" ${goal.completed ? 'checked' : ''} onchange="toggleSelectedGoal(${goal.id})" style="transform: scale(1.2);">
+                        <span style="flex: 1;">${goal.text}</span>
+                        <span style="font-size: 12px; color: #2196F3; background: rgba(33, 150, 243, 0.1); padding: 2px 8px; border-radius: 12px;">${getCategoryIcon(goal.category)}</span>
+                        <span style="font-size: 12px;" title="Öncelik">${priorityIcon}</span>
+                        <button onclick="deleteSelectedGoal(${goal.id})" style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Sil</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleSelectedGoal(goalId) {
+            const dateString = selectedDate.toDateString();
+            const selectedGoals = goals[dateString] || [];
+            const goal = selectedGoals.find(g => g.id === goalId);
+            
+            if (goal) {
+                goal.completed = !goal.completed;
+                if (goal.completed) {
+                    goal.completedAt = new Date();
+                    addPoints(5);
+                    showNotification('Hedef tamamlandı! +5 puan 🎉');
+                } else {
+                    goal.completedAt = null;
+                }
+                displaySelectedGoals();
+                updateProgress();
+                updateAnalytics();
+                autoSave();
+            }
+        }
+
+        function deleteSelectedGoal(goalId) {
+            const dateString = selectedDate.toDateString();
+            goals[dateString] = goals[dateString].filter(g => g.id !== goalId);
+            displaySelectedGoals();
+            updateProgress();
+            updateAnalytics();
+            autoSave();
+            showNotification('Hedef silindi');
+        }
+
+        function handleSelectedEnterKey(event) {
+            if (event.key === 'Enter') {
+                addSelectedGoal();
+            }
+        }
+
+        // Premium Plan Yönetimi
+        function showPremiumModal() {
+            document.getElementById('premiumModal').style.display = 'flex';
+        }
+
+        function closePremiumModal() {
+            document.getElementById('premiumModal').style.display = 'none';
+        }
+
+        function selectFreePlan() {
+            userPlan = 'free';
+            updatePremiumStatus();
+            closePremiumModal();
+            alert('Ücretsiz plan seçildi');
+        }
+
+        function selectPremiumPlan() {
+            userPlan = 'premium';
+            premiumExpiry = new Date();
+            premiumExpiry.setMonth(premiumExpiry.getMonth() + 1); // 1 ay premium
+            updatePremiumStatus();
+            closePremiumModal();
+            alert('Premium plana hos geldiniz! 🎉');
+            loadPremiumFeatures();
+        }
+
+        function updatePremiumStatus() {
+            const statusElement = document.getElementById('premiumStatus');
+            const btnElement = document.getElementById('premiumBtn');
+            
+            if (userPlan === 'premium') {
+                statusElement.textContent = '💎';
+                btnElement.classList.add('premium');
+            } else {
+                statusElement.textContent = '🆓';
+                btnElement.classList.remove('premium');
+            }
+            
+            // Premium özellikleri göster/gizle
+            const premiumFeatures = document.getElementById('premiumFeatures');
+            if (userPlan === 'premium') {
+                premiumFeatures.style.display = 'block';
+            } else {
+                premiumFeatures.style.display = 'none';
+            }
+        }
+
+        function loadPremiumFeatures() {
+            if (userPlan === 'premium') {
+                document.getElementById('premiumFeatures').style.display = 'block';
+            }
+        }
+
+        // Premium özellik kontrolü
+        function checkPremiumFeature(featureName) {
+            if (userPlan !== 'premium') {
+                alert('Bu ozellik Premium plana ozeldir! 💎');
+                showPremiumModal();
+                return false;
+            }
+            return true;
+        }
+
+        // Hedef limiti kontrolü (ücretsiz kullanıcılar için)
+        function checkGoalLimit() {
+            // goals objesinin yüklendiğinden emin ol
+            if (!goals) {
+                goals = {};
+            }
+            
+            if (userPlan === 'free') {
+                const today = new Date().toDateString();
+                const todayGoals = goals[today] || [];
+                if (todayGoals.length >= 5) {
+                    alert('Ucretsiz planda gunde maksimum 5 hedef ekleyebilirsiniz. Premium\'a gecin! 💎');
+                    showPremiumModal();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Sosyal Özellikler
+        function showFriendsModal() {
+            console.log('showFriendsModal çağrıldı');
+            
+            // Premium kontrolü kaldırıldı - herkes kullanabilir
+            // if (!checkPremiumFeature('friends')) return;
+            
+            // Arkadaş listesini güncelle
+            updateFriendsList();
+            
+            // Kullanıcı kodunu göster
+            const myCodeElement = document.getElementById('myCode');
+            if (myCodeElement && currentUser) {
+                myCodeElement.value = currentUser.id;
+                console.log('Kullanıcı kodu ayarlandı:', currentUser.id);
+            } else {
+                console.log('myCodeElement veya currentUser bulunamadı');
+            }
+            
+            // Modal'ı göster
+            const friendsModal = document.getElementById('friendsModal');
+            if (friendsModal) {
+                friendsModal.style.display = 'flex';
+                console.log('Arkadaş modalı gösterildi');
+            } else {
+                console.error('friendsModal elementi bulunamadı');
+            }
+        }
+
+        function closeFriendsModal() {
+            const friendsModal = document.getElementById('friendsModal');
+            if (friendsModal) {
+                friendsModal.style.display = 'none';
+            }
+        }
+
+        function addFriend() {
+            const friendNameInput = document.getElementById('friendNameInput');
+            const friendCodeInput = document.getElementById('friendCodeInput');
+            
+            if (!friendNameInput || !friendCodeInput) {
+                alert('Form elementleri bulunamadi!');
+                return;
+            }
+            
+            const friendName = friendNameInput.value.trim();
+            const friendCode = friendCodeInput.value.trim();
+            
+            if (!friendName || !friendCode) {
+                alert('Lutfen arkadas adi ve kodunu girin!');
+                return;
+            }
+            
+            // Kendini eklemeye çalışıyor mu kontrol et
+            if (friendCode == currentUser.id) {
+                alert('Kendinizi arkadas olarak ekleyemezsiniz!');
+                return;
+            }
+            
+            // Arkadaş zaten var mı kontrol et
+            if (friends.find(f => f.id == friendCode)) {
+                alert('Bu arkadas zaten listenizde!');
+                return;
+            }
+            
+            // Yeni arkadaş ekle
+            const newFriend = {
+                id: friendCode,
+                name: friendName,
+                addedAt: new Date()
+            };
+            
+            friends.push(newFriend);
+            saveUserData();
+            
+            // Form'u temizle
+            friendNameInput.value = '';
+            friendCodeInput.value = '';
+            
+            // Listeyi güncelle
+            updateFriendsList();
+            
+            alert('Arkadas eklendi: ' + friendName + '! 👥');
+        }
+
+        function updateFriendsList() {
+            const friendsList = document.getElementById('friendsList');
+            if (!friendsList) {
+                console.error('friendsList elementi bulunamadi');
+                return;
+            }
+            
+            friendsList.innerHTML = '';
+            
+            if (!friends || friends.length === 0) {
+                friendsList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Henuz arkadasiniz yok</p>';
+                return;
+            }
+            
+            friends.forEach(friend => {
+                const friendDiv = document.createElement('div');
+                friendDiv.style.cssText = `
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    margin-bottom: 8px;
+                `;
+                
+                friendDiv.innerHTML = `
+                    <div>
+                        <strong>${friend.name}</strong>
+                        <br>
+                        <small style="color: #666;">Eklenme: ${new Date(friend.addedAt).toLocaleDateString()}</small>
+                    </div>
+                    <button onclick="removeFriend('${friend.id}')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+                        Kaldır
+                    </button>
+                `;
+                
+                friendsList.appendChild(friendDiv);
+            });
+        }
+
+        function removeFriend(friendId) {
+            friends = friends.filter(f => f.id !== friendId);
+            saveUserData();
+            updateFriendsList();
+            alert('Arkadas kaldirildi!');
+        }
+
+        function copyMyCode() {
+            const codeInput = document.getElementById('myCode');
+            if (!codeInput) {
+                alert('Kod alani bulunamadi!');
+                return;
+            }
+            
+            codeInput.select();
+            codeInput.setSelectionRange(0, 99999); // Mobil için
+            
+            try {
+                document.execCommand('copy');
+                alert('Kod kopyalandi! Arkadaslarinizla paylasabilirsiniz.');
+            } catch (err) {
+                alert('Kopyalama basarisiz! Manuel olarak kopyalayin.');
+            }
+        }
+
+        function showLeaderboard() {
+            if (!checkPremiumFeature('leaderboard')) return;
+            alert('Liderlik tablosu yakinda! 🏆');
+        }
+
+        function shareAchievement() {
+            if (!checkPremiumFeature('share')) return;
+            alert('Basariniz paylasildi! 🎉');
+        }
+
+        // Gelişmiş Analitik
+        function exportPDF() {
+            if (!checkPremiumFeature('pdf')) return;
+            alert('PDF rapor hazirlaniyor... 📄');
+        }
+
+        function showAdvancedAnalytics() {
+            if (!checkPremiumFeature('analytics')) return;
+            alert('Gelismis analitik yakinda! 📊');
+        }
+
+        function showTrends() {
+            if (!checkPremiumFeature('trends')) return;
+            alert('Trend analizi yakinda! 📈');
+        }
+
+        // AI Özellikleri
+        function getAIPersonalizedAdvice() {
+            if (!checkPremiumFeature('ai_advice')) return;
+            alert('AI kisisel onerisi hazirlaniyor... 🤖');
+        }
+
+        function optimizeGoals() {
+            if (!checkPremiumFeature('goal_optimization')) return;
+            alert('Hedefleriniz optimize ediliyor... ✨');
+        }
+
+        function predictSuccess() {
+            if (!checkPremiumFeature('prediction')) return;
+            alert('Basari tahmini hesaplaniyor... 🔮');
+        }
+
+
+
+        // Bugünün hedeflerini yükle
+        function loadTodayGoals() {
+            displayTodayGoals();
+            updateProgress();
+        }
+
+        // Seçili günün hedeflerini yükle
+        function loadSelectedGoals() {
+            displaySelectedGoals();
+        }
+
+        // Bugünün hedeflerini kaydet (eski sistem - geriye uyumluluk için)
+        function saveTodayGoals() {
+            const today = new Date().toDateString();
+            const todayGoals = [];
+            
+            for (let i = 1; i <= 3; i++) {
+                const goal = document.getElementById(`goal${i}`).value.trim();
+                if (goal) {
+                    todayGoals.push({
+                        id: Date.now() + i,
+                        text: goal,
+                        category: 'genel',
+                        completed: false,
+                        createdAt: new Date()
+                    });
+                }
+            }
+            
+            goals[today] = todayGoals;
+            autoSave();
+            renderCalendar();
+            updateProgress();
+            alert('Hedefler kaydedildi!');
+        }
+
+        // Seçili günün hedeflerini kaydet (eski sistem - geriye uyumluluk için)
+        function saveSelectedGoals() {
+            const dateString = selectedDate.toDateString();
+            const selectedGoals = [];
+            
+            for (let i = 1; i <= 3; i++) {
+                const goal = document.getElementById(`selectedGoal${i}`).value.trim();
+                if (goal) {
+                    selectedGoals.push({
+                        id: Date.now() + i,
+                        text: goal,
+                        category: 'genel',
+                        completed: false,
+                        createdAt: new Date()
+                    });
+                }
+            }
+            
+            goals[dateString] = selectedGoals;
+            autoSave();
+            renderCalendar();
+            alert('Hedefler kaydedildi!');
+        }
+
+        // İlerleme güncelleme
+        function updateProgress() {
+            const today = new Date().toDateString();
+            const todayGoals = goals[today] || [];
+            const completedCount = todayGoals.filter(goal => goal.completed).length;
+            const totalCount = todayGoals.length;
+            
+            const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${completedCount}/${totalCount} hedef tamamlandı`;
+        }
+
+        // Bugünü tamamla
+        function completeToday() {
+            const today = new Date().toDateString();
+            completedDays[today] = true;
+            
+            // Gamification
+            addPoints(50);
+            checkStreak();
+            checkBadges();
+            
+            updateStats();
+            autoSave();
+            
+            // Bildirim gönder
+            sendNotification('MiniPlan', 'Günü başarıyla tamamladınız! +50 puan kazandınız! 🎉');
+            alert('Gunu basarili tamamladiniz! +50 puan kazandiniz! 🎉');
+        }
+
+        // Gamification fonksiyonları
+        function addPoints(points) {
+            userStats.points += points;
+            checkLevelUp();
+            saveUserData();
+        }
+
+        function checkLevelUp() {
+            const newLevel = Math.floor(userStats.points / 100) + 1;
+            if (newLevel > userStats.level) {
+                userStats.level = newLevel;
+                alert(`Seviye atladiniz! Yeni seviye: ${newLevel} 🚀`);
+            }
+        }
+
+        function checkStreak() {
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+            
+            if (completedDays[yesterday]) {
+                userStats.streak++;
+            } else {
+                userStats.streak = 1;
+            }
+            
+            if (userStats.streak % 7 === 0) {
+                showNotification(`7 günlük seri! +100 bonus puan! 🔥`);
+                addPoints(100);
+            }
+        }
+
+        function checkBadges() {
+            const badges = [
+                { id: 'first_goal', name: 'İlk Hedef', icon: '🎯', condition: () => Object.keys(goals).length >= 1 },
+                { id: 'week_streak', name: 'Haftalık Seri', icon: '🔥', condition: () => userStats.streak >= 7 },
+                { id: 'month_streak', name: 'Aylık Seri', icon: '⭐', condition: () => userStats.streak >= 30 },
+                { id: 'level_5', name: 'Seviye 5', icon: '🚀', condition: () => userStats.level >= 5 },
+                { id: 'level_10', name: 'Seviye 10', icon: '👑', condition: () => userStats.level >= 10 },
+                { id: 'perfect_day', name: 'Mükemmel Gün', icon: '💎', condition: () => {
+                    const today = new Date().toDateString();
+                    const todayGoals = goals[today] || [];
+                    return todayGoals.length > 0 && todayGoals.every(goal => goal.completed);
+                }}
+            ];
+            
+            badges.forEach(badge => {
+                if (!userStats.badges.includes(badge.id) && badge.condition()) {
+                    userStats.badges.push(badge.id);
+                    alert(`Yeni rozet kazandiniz: ${badge.name} 🏆`);
+                    addPoints(25);
+                    displayBadges();
+                }
+            });
+        }
+
+        function displayBadges() {
+            const container = document.getElementById('badgesContainer');
+            if (!container) return;
+            
+            // userStats.badges kontrolü
+            if (!userStats || !userStats.badges) {
+                userStats = userStats || {};
+                userStats.badges = userStats.badges || [];
+            }
+            
+            const badgeData = {
+                'first_goal': { name: 'İlk Hedef', icon: '🎯' },
+                'week_streak': { name: 'Haftalık Seri', icon: '🔥' },
+                'month_streak': { name: 'Aylık Seri', icon: '⭐' },
+                'level_5': { name: 'Seviye 5', icon: '🚀' },
+                'level_10': { name: 'Seviye 10', icon: '👑' },
+                'perfect_day': { name: 'Mükemmel Gün', icon: '💎' }
+            };
+            
+            container.innerHTML = userStats.badges.map(badgeId => {
+                const badge = badgeData[badgeId];
+                return `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 5px;">
+                    <span>${badge.icon}</span>
+                    <span>${badge.name}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // AI Hedef Önerileri
+        function generateAISuggestions() {
+            const suggestions = [
+                "💼 İş: Önemli bir projeyi tamamlayın veya yeni bir beceri öğrenin",
+                "🏃‍♂️ Sağlık: 30 dakika egzersiz yapın veya sağlıklı bir öğün hazırlayın",
+                "📚 Öğrenme: Yeni bir kitap okuyun veya online kursa başlayın",
+                "👥 Sosyal: Bir arkadaşınızla görüşün veya ailenizi arayın",
+                "🧘‍♀️ Kişisel: Meditasyon yapın veya günlük tutun",
+                "🎨 Yaratıcılık: Bir hobi projesi başlatın veya sanat eseri yaratın",
+                "💰 Finans: Bütçenizi gözden geçirin veya tasarruf hedefi belirleyin",
+                "🏠 Ev: Bir odanızı düzenleyin veya yeni bir dekorasyon projesi başlatın"
+            ];
+            
+            const randomSuggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 3);
+            const container = document.getElementById('aiSuggestions');
+            
+            if (!container) return;
+            
+            container.innerHTML = randomSuggestions.map(suggestion => 
+                `<div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                    ${suggestion}
+                </div>`
+            ).join('');
+        }
+
+        // İstatistikleri güncelle
+        function updateStats() {
+            const totalDays = Object.keys(completedDays).length;
+            const allGoals = Object.values(goals).filter(Array.isArray).flat();
+            const completedGoals = allGoals.filter(goal => goal.completed).length;
+            const successRate = allGoals.length > 0 ? Math.round((completedGoals / allGoals.length) * 100) : 0;
+            
+            const totalDaysElement = document.getElementById('totalDays');
+            const completedGoalsElement = document.getElementById('completedGoals');
+            const successRateElement = document.getElementById('successRate');
+            
+            if (totalDaysElement) totalDaysElement.textContent = totalDays;
+            if (completedGoalsElement) completedGoalsElement.textContent = completedGoals;
+            if (successRateElement) successRateElement.textContent = successRate + '%';
+            
+            // Gamification istatistikleri
+            const userPointsElement = document.getElementById('userPoints');
+            const userLevelElement = document.getElementById('userLevel');
+            const userStreakElement = document.getElementById('userStreak');
+            
+            if (userPointsElement) userPointsElement.textContent = userStats.points;
+            if (userLevelElement) userLevelElement.textContent = userStats.level;
+            if (userStreakElement) userStreakElement.textContent = userStats.streak;
+            
+            // Haftalık raporu güncelle
+            updateWeeklyReport();
+        }
+
+        // Gelişmiş analitik güncelleme
+        function updateAnalytics() {
+            // goals objesinin yüklendiğinden emin ol
+            if (!goals) {
+                goals = {};
+            }
+            updateWeeklyReport();
+            updateCategoryChart();
+            updateTimeChart();
+        }
+
+        // Haftalık rapor güncelle
+        function updateWeeklyReport() {
+            // goals objesinin yüklendiğinden emin ol
+            if (!goals) {
+                goals = {};
+            }
+            
+            const today = new Date();
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            
+            let weeklyGoals = 0;
+            let weeklyCompleted = 0;
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(weekStart);
+                date.setDate(weekStart.getDate() + i);
+                const dateString = date.toDateString();
+                
+                if (goals[dateString]) {
+                    weeklyGoals += goals[dateString].length;
+                    weeklyCompleted += goals[dateString].filter(goal => goal.completed).length;
+                }
+            }
+            
+            const weeklyRate = weeklyGoals > 0 ? Math.round((weeklyCompleted / weeklyGoals) * 100) : 0;
+            
+            const weeklyGoalsElement = document.getElementById('weeklyGoals');
+            const weeklyCompletedElement = document.getElementById('weeklyCompleted');
+            const weeklyRateElement = document.getElementById('weeklyRate');
+            
+            if (weeklyGoalsElement) weeklyGoalsElement.textContent = weeklyGoals;
+            if (weeklyCompletedElement) weeklyCompletedElement.textContent = weeklyCompleted;
+            if (weeklyRateElement) weeklyRateElement.textContent = weeklyRate + '%';
+        }
+
+        // Kategori grafiği güncelle
+        function updateCategoryChart() {
+            // goals objesinin yüklendiğinden emin ol
+            if (!goals) {
+                goals = {};
+            }
+            
+            const categoryStats = {};
+            const allGoals = Object.values(goals).filter(Array.isArray).flat();
+            
+            allGoals.forEach(goal => {
+                if (!categoryStats[goal.category]) {
+                    categoryStats[goal.category] = { total: 0, completed: 0 };
+                }
+                categoryStats[goal.category].total++;
+                if (goal.completed) categoryStats[goal.category].completed++;
+            });
+            
+            const container = document.getElementById('categoryChart');
+            container.innerHTML = '';
+            
+            Object.entries(categoryStats).forEach(([category, stats]) => {
+                const percentage = stats.total > 0 ? (stats.completed / stats.total) * 100 : 0;
+                const height = Math.max(20, percentage);
+                
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.width = '30px';
+                bar.style.height = height + '%';
+                bar.title = `${getCategoryIcon(category)} ${stats.completed}/${stats.total} (${Math.round(percentage)}%)`;
+                
+                const label = document.createElement('div');
+                label.className = 'chart-label';
+                label.textContent = getCategoryIcon(category);
+                
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.flexDirection = 'column';
+                wrapper.style.alignItems = 'center';
+                wrapper.appendChild(bar);
+                wrapper.appendChild(label);
+                
+                container.appendChild(wrapper);
+            });
+        }
+
+        // Zaman grafiği güncelle
+        function updateTimeChart() {
+            // goals objesinin yüklendiğinden emin ol
+            if (!goals) {
+                goals = {};
+            }
+            
+            const timeStats = {};
+            const allGoals = Object.values(goals).filter(Array.isArray).flat();
+            
+            allGoals.forEach(goal => {
+                const hour = new Date(goal.createdAt).getHours();
+                if (!timeStats[hour]) timeStats[hour] = 0;
+                timeStats[hour]++;
+            });
+            
+            const container = document.getElementById('timeChart');
+            container.innerHTML = '';
+            
+            for (let hour = 0; hour < 24; hour++) {
+                const count = timeStats[hour] || 0;
+                const height = Math.max(10, count * 10);
+                
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.width = '8px';
+                bar.style.height = height + '%';
+                bar.title = `${hour}:00 - ${count} hedef`;
+                
+                container.appendChild(bar);
+            }
+        }
+
+        // Bugünün tarihini güncelle
+        function updateTodayDate() {
+            const today = new Date();
+            document.getElementById('todayDate').textContent = 
+                today.toLocaleDateString('tr-TR', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+        }
+
+        // Takvim navigasyonu
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        // Service Worker kaydı
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(function(registration) {
+                        console.log('Service Worker kaydedildi:', registration);
+                        // PWA özelliklerini kur
+                        setupNotifications();
+                        setupPeriodicSync();
+                        setupBackgroundSync();
+                    })
+                    .catch(function(error) {
+                        console.log('Service Worker kaydı başarısız:', error);
+                    });
+            });
+        }
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(function(registration) {
+                        console.log('Service Worker registered successfully:', registration);
+                    })
+                    .catch(function(error) {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
+<!-- MiniPlan v2.1.8 - Icon olmadan devam: 2024-06-10 --> 
